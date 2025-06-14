@@ -85,6 +85,34 @@ def generate_scaled_random_geometric_graph(N, R, c_weight=0.5):
     G.add_edges_from(nx.geometric_edges(G, radius=R))
     return G
 
+
+
+def glue_edges_geo(G,R,inplace=False,keep_shape=True):
+    """
+    Adds "boundary break" edges for geometric graph.
+    """
+    g1 = G if inplace else copy.deepcopy(G)
+    dist = G.number_of_nodes()
+    dist = dist**0.5
+    
+    for node in g1.nodes:
+        pos0,pos1 = g1.nodes[node]["pos"]
+        pos0 = pos0+dist if pos0<(dist/2) else pos0
+        pos1 = pos1+dist if pos1<(dist/2) else pos1
+        g1.nodes[node]["pos"] = (pos0,pos1)
+    
+    g1.add_edges_from(nx.geometric_edges(g1, radius=R))
+
+    if keep_shape:
+        for node in g1.nodes:
+            pos0,pos1 = g1.nodes[node]["pos"]
+            pos0 = pos0-dist if pos0>dist else pos0
+            pos1 = pos1-dist if pos1>dist else pos1
+            g1.nodes[node]["pos"] = (pos0,pos1) 
+    return g1
+
+
+
 #Random grid
 def generate_random_grid_graph(grid_size=(10, 10), edge_prob=0.8, c_weight=0.5):
     """
@@ -130,6 +158,17 @@ def generate_random_grid_with_long_range(grid_size=(10, 10), edge_prob=0.8, long
     return G
 
 
+#random graph
+def generate_random(n,p,c_weight=0.5):
+    G = nx.fast_gnp_random_graph(n,p)
+    return transform_to_player(G,c_weight)
+
+
+#scale-free
+def generate_scalefree(n,alpha=0.4,c_weight=0.5):
+    G = nx.scale_free_graph(n,alpha=alpha,beta=1-2*alpha,gamma=alpha)
+    G = G.to_undirected()
+    return transform_to_player(G,c_weight)
 
 ###
 # DATALOADER STUFF

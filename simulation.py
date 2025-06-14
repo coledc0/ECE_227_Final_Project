@@ -10,7 +10,7 @@ import random
 import os
 import copy
 
-def update_score_matrix(G, score_dic, output_avg = False):
+def update_score_matrix(G, score_dic, coop_bonus=0, output_avg = False):
     """
     Scores all players in the graph using the score_dictionary defined outside the function. 
     
@@ -29,9 +29,12 @@ def update_score_matrix(G, score_dic, output_avg = False):
     for player in G.nodes:
         self_strat = player.strategy
         score_norm[self_strat] += 1
+        num_friends = 0
         for neighbor in G[player]:
             score_input = self_strat + neighbor.strategy
+            num_friends += (score_input=='CC')
             player.score += score_dic[score_input]
+        player.score += coop_bonus*(num_friends**2)
         avg_score[self_strat] += player.score
 
     if output_avg:
@@ -107,7 +110,7 @@ def draw_graph(G):
     plt.title(f"{N} nodes, {G.number_of_edges()} edges")
     plt.show()
 
-def run_simulation(G, rounds, score_dic, draw=True, output_dir=None):
+def run_simulation(G, rounds, score_dic, coop_bonus=0, draw=True, output_dir=None, i=999999):
     """
     Runs update_strategies_probabilistic on graph G for specified # of rounds.
 
@@ -138,7 +141,7 @@ def run_simulation(G, rounds, score_dic, draw=True, output_dir=None):
     C_pop_hist = []
     D_pop_hist = []
     for round_num in range(1, rounds+1):
-        avg_score_history.append(update_score_matrix(G, score_dic, output_avg = True))
+        avg_score_history.append(update_score_matrix(G, score_dic, coop_bonus=0, output_avg = True))
         switches_occurred = update_strategies_probabilistic(G, 0.5)
         history[round_num-1] = switches_occurred
         strategies = [node.strategy for node in G.nodes]
@@ -153,21 +156,21 @@ def run_simulation(G, rounds, score_dic, draw=True, output_dir=None):
                     draw_graph(G)
                 break
 
-        #draw every 5 iterations
-        '''
-        if round_num % 5 == 0 and draw:
+        #draw every i iterations
+        if round_num % i == 0 and draw:
             print(f"Round {round_num} strategies:")
             print(f"Cooperators: {strategies.count('C')}, Defectors: {strategies.count('D')}, graph changed: {switches_occurred}")
             draw_graph(G)
-        '''
+            
         # Reset scores
         for node in G.nodes:
             node.score = 0
     
     else: #if loop is unbroken
+        print(f"Convergence not reached; stopped at {rounds} iterations")
+        print(f"Cooperators: {strategies.count('C')}, Defectors: {strategies.count('D')}, graph changed: {switches_occurred}")
         if draw:
-            print(f"Convergence not reached; stopped at {rounds} iterations")
-            print(f"Cooperators: {strategies.count('C')}, Defectors: {strategies.count('D')}, graph changed: {switches_occurred}")
+            draw_graph(G)
     if draw:        
         coop_score_hist = [avg_score_history[i]['C'] for i in range(len(avg_score_history))]
         defect_score_hist = [avg_score_history[i]['D'] for i in range(len(avg_score_history))]
@@ -264,6 +267,11 @@ def grid_search_plot(G, grid_graph_dict, coop_bonus_range, defector_bonus_range,
             idx_s += 1
         idx_d += 1
 
+    #MAKING THE VOXEL PLOT
+    ## Voxel Dimensions
+    dd = (defector_bonus[1] - defector_bonus[0]) * 0.75
+    ds = (sucker_loss[1] - sucker_loss[0]) * 0.75
+    dc = (coop_bonus[1] - coop_bonus[0]) * 0.75
 
     filled = np.ones_like(coop_pop, dtype=bool)  # Plot all voxels
 
@@ -284,8 +292,7 @@ def grid_search_plot(G, grid_graph_dict, coop_bonus_range, defector_bonus_range,
     for i in range(resolution):
         for j in range(resolution):
             for k in range(resolution):
-                val = coop_pop[i, j, k]
-                rgb = val_to_rgb(val)
+                rgb = val_to_rgb(coop_pop[i, j, k])
                 colors[i, j, k] = (*rgb, 0.3)  # alpha = 0.3
 
     # Create figure
