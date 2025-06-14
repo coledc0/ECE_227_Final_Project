@@ -95,7 +95,7 @@ def draw_graph(G):
     if position_active:
         pos = nx.get_node_attributes(G, 'pos')
     N = G.number_of_nodes()
-    plt.figure(figsize=(6,6))
+    plt.figure(figsize=(8,8))
     
     strategy_colors = {'C': 'green',
                        'D': 'red'}
@@ -141,7 +141,7 @@ def run_simulation(G, rounds, score_dic, coop_bonus=0, draw=True, output_dir=Non
     C_pop_hist = []
     D_pop_hist = []
     for round_num in range(1, rounds+1):
-        avg_score_history.append(update_score_matrix(G, score_dic, coop_bonus=0, output_avg = True))
+        avg_score_history.append(update_score_matrix(G, score_dic, coop_bonus=coop_bonus, output_avg = True))
         switches_occurred = update_strategies_probabilistic(G, 0.5)
         history[round_num-1] = switches_occurred
         strategies = [node.strategy for node in G.nodes]
