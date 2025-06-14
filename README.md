@@ -5,3 +5,9 @@ For ease of use, the twitter data from LINK is included in the github repo, insi
 
 ## Misc
 the main file does not include all the simulations we did, as each of us did different simulations, but they are easy enough to replicate from our description in the paper.
+
+## Installing necessary packages
+To install all necessary packages, run the following terminal command:
+'''
+pip install -r requirements.txt
+'''
