@@ -11,3 +11,7 @@ To install all necessary packages, run the following terminal command:
 '''
 pip install -r requirements.txt
 '''
+if you would like to use the conda env file, you may also run
+'''
+conda env create -f ece227env.yml
+'''
