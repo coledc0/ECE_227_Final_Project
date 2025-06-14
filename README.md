@@ -7,11 +7,8 @@ For ease of use, the twitter data from LINK is included in the github repo, insi
 the main file does not include all the simulations we did, as each of us did different simulations, but they are easy enough to replicate from our description in the paper.
 
 ## Installing necessary packages
-To install all necessary packages, run the following terminal command:
-'''
-pip install -r requirements.txt
-'''
-if you would like to use the conda env file, you may also run
-'''
-conda env create -f ece227env.yml
-'''
+The following commands should suffice to run the code:
+conda install networkx
+conda install jupyter
+conda install scipy
+conda install matplotlib
